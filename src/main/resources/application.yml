@@ -1,0 +1,27 @@
+server:
+  port: '${port:8081}'
+  forward-headers-strategy: framework
+  error:
+    include-message: always
+  servlet:
+    context-path: /pilsen
+spring:
+  jpa:
+    database: POSTGRESQL
+    show-sql: false
+    generate-ddl: true
+    ddl-auto: update
+    open-in-view: false
+  datasource:
+    platform: postgres
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:9999/pilsen_db
+    username: pilsen
+    password: root
+  jackson:
+    serialization:
+      write_dates_as_timestamps: false
+      fail-on-self-references: false
+  rabbitmq:
+    addresses: amqp://guest:guest@localhost:5672/
+    queue: pilsen-mail

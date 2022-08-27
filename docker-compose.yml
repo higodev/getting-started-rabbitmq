@@ -1,0 +1,51 @@
+version: '3'
+networks:
+  networkApp:
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
+services:
+  api:
+    build: .
+    ports:
+      - "8082:8081"
+    depends_on:
+      - rabbitmq
+      - postgres
+    networks:
+      networkApp:
+        ipv4_address: 172.20.0.10
+  rabbitmq:
+    image: rabbitmq:3.8.25-management-alpine
+    container_name: 'rabbitmq_pilsen'
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      networkApp:
+        ipv4_address: 172.20.0.11
+  postgres:
+    image: postgres:13.1
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-q", "-d", "postgres", "-U", "root" ]
+      timeout: 45s
+      interval: 10s
+      retries: 10
+    restart: always
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=postgres
+      - APP_DB_USER_ADM=pilsen_adm
+      - APP_DB_USER=pilsen
+      - APP_DB_PASS=root
+      - APP_DB_NAME=pilsen_db
+    volumes:
+      - ./config/docker-compose:/docker-entrypoint-initdb.d/
+    ports:
+      - 9999:5432
+    networks:
+      networkApp:
+        ipv4_address: 172.20.0.12
